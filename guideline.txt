@@ -1,0 +1,17 @@
+1) Create Three Agents:
+
+    General Query Agent → Handles generic chatbot interactions.
+
+    Admissions Agent → Specializes in answering Concordia CS program queries.
+
+    AI Agent → Provides AI-related insights.
+
+2) Define a Routing System:
+
+    Implement an intent classifier (simple keyword matching or a small LLM model) to direct user queries to the appropriate agent.
+
+3) Integrate External Knowledge Sources:
+
+    Use Wikipedia API for fact-checking.
+
+    Optionally, pull data from official Concordia websites for admissions queries.
