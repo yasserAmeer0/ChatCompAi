@@ -1,3 +1,0 @@
-python -m venv venv
-venv\Scripts\activate
-pip install ollama langchain fastapi faiss-cpu chromadb
