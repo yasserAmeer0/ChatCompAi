@@ -17,8 +17,7 @@ class ChatbotSystem:
         user_input_lower = user_input.lower()
         if "admission" in user_input_lower or "concordia" in user_input_lower or "computer science" in user_input_lower or "electives" in user_input_lower or "concordia university" in user_input_lower:
             return self.admission_agent.respond(user_input)
-        elif "ai" in user_input_lower or "artificial intelligence" in user_input_lower or "machine learning" in user_input_lower or "ml" in user_input_lower or "deeplearning" in user_input_lower
-        or "machinelearning" in user_input_lower or "deep learning" in user_input_lower:
+        elif "ai" in user_input_lower or "artificial intelligence" in user_input_lower or "machine learning" in user_input_lower or "ml" in user_input_lower or "deeplearning" in user_input_lower or "machinelearning" in user_input_lower or "deep learning" in user_input_lower:
             return self.ai_agent.respond(user_input)
         else:
             return self.general_agent.respond(user_input)

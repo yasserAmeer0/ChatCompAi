@@ -5,3 +5,7 @@ fastapi
 uvicorn
 pydantic
 jinja2
+sentence-transformers==4.0.2
+transformers==4.45.1
+faiss-cpu  # Adding this since you're using FAISS
+numpy      # Required for FAISS and embeddings
