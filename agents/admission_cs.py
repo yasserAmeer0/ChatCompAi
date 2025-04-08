@@ -4,6 +4,7 @@ from langchain_community.retrievers import WikipediaRetriever
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
+#from langchain.prompts import PromptTemplate
 
 class AdmissionAgent:
     def __init__(self):
@@ -48,12 +49,13 @@ class AdmissionAgent:
 
         # Construct the prompt with retrieved context
         prompt = (
+            f"AI: Respond as Concordia University Computer Science admission expert 2-3 sentences max.\n"
             f"{self.context}\n"
             f"Retrieved Context:\n{relevant_context}\n"
             f"History:\n{history}\n"
             f"Wikipedia Info: {wiki_content}\n"
             f"User: {user_input}\n"
-            f"AI:"
+           
         )
 
         # Generate response

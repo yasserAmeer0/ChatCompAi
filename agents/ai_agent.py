@@ -48,12 +48,13 @@ class AIAgent:
 
         # Construct the prompt with retrieved context
         prompt = (
+            f"AI: Respond as AI expert with 2-3 sentences max.\n"
             f"{self.context}\n"
             f"Retrieved Context:\n{relevant_context}\n"
             f"History:\n{history}\n"
             f"Wikipedia Info: {wiki_content}\n"
             f"User: {user_input}\n"
-            f"AI:"
+            
         )
 
         # Generate response

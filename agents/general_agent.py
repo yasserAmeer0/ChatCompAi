@@ -47,11 +47,12 @@ class GeneralAgent:
 
         # Construct the prompt with retrieved context
         prompt = (
+            f"AI:  Respond to the best of your knowledge to this question with 2-3 sentences max.\n"
             f"Retrieved Context:\n{relevant_context}\n"
             f"History:\n{history}\n"
             f"Wikipedia Info: {wiki_content}\n"
             f"User: {user_input}\n"
-            f"AI: Respond as General AI agent, 2-3 sentences max."
+            
         )
 
         # Generate response using Ollama
