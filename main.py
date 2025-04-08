@@ -6,22 +6,50 @@ from pydantic import BaseModel
 from agents.general_agent import GeneralAgent
 from agents.admission_cs import AdmissionAgent
 from agents.ai_agent import AIAgent
+import spacy
 
 class ChatbotSystem:
     def __init__(self):
         self.general_agent = GeneralAgent()
         self.admission_agent = AdmissionAgent()
         self.ai_agent = AIAgent()
+        self.last_agent = None
+
+        # Load spaCy model for topic extraction
+        self.nlp = spacy.load("en_core_web_sm")
+
+    def detect_topic(self, text):
+        doc = self.nlp(text.lower())
+
+        # Heuristic: use entity labels or keywords
+        keywords = set(token.lemma_ for token in doc)
+
+        admission_keywords = {"concordia", "university", "admission", "program", "elective", "course", "application"}
+        ai_keywords = {"ai", "artificial", "intelligence", "machine", "learning", "deep", "model"}
+
+        if keywords & admission_keywords:
+            return "admission"
+        elif keywords & ai_keywords:
+            return "ai"
+        else:
+            return "general"
 
     def route_query(self, user_input):
-        user_input_lower = user_input.lower()
-        if "admission" in user_input_lower or "concordia" in user_input_lower or "computer science" in user_input_lower or "electives" in user_input_lower or "concordia university" in user_input_lower:
-            return self.admission_agent.respond(user_input)
-        elif "ai" in user_input_lower or "artificial intelligence" in user_input_lower or "machine learning" in user_input_lower or "ml" in user_input_lower or "deeplearning" in user_input_lower or "machinelearning" in user_input_lower or "deep learning" in user_input_lower:
-            return self.ai_agent.respond(user_input)
-        else:
-            return self.general_agent.respond(user_input)
+        topic = self.detect_topic(user_input)
 
+        if topic == "admission":
+            self.last_agent = self.admission_agent
+        elif topic == "ai":
+            self.last_agent = self.ai_agent
+        elif self.last_agent:
+            # Use previous agent to maintain context
+            return self.last_agent.respond(user_input)
+        else:
+            self.last_agent = self.general_agent
+
+        return self.last_agent.respond(user_input)
+
+# FastAPI Setup
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
