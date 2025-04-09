@@ -4,14 +4,14 @@ from langchain_community.retrievers import WikipediaRetriever
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-#from langchain.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate
 
 class AdmissionAgent:
     def __init__(self):
         self.model = "gemma3:4B"
         self.memory = ConversationBufferMemory()
         self.wiki_retriever = WikipediaRetriever(top_k_results=1)
-        self.context = "You are a Concordia University Computer Science admission expert. Respond as AI only, 2-3 sentences max."
+        self.context = "You are a Concordia University Computer Science admission expert.  2-3 sentences max."
         # Initialize sentence transformer for embeddings
         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
         # Initialize FAISS index
@@ -30,7 +30,7 @@ class AdmissionAgent:
         except Exception:
             wiki_content = "Couldn’t fetch Wikipedia data."
 
-        # Combine history, wiki content, and user input for context
+        # Combine history, wiki content, and user input for context ( good)
         combined_context = f"History:\n{history}\nWikipedia Info: {wiki_content}\nUser: {user_input}"
 
         # Generate embedding for the combined context
@@ -47,15 +47,25 @@ class AdmissionAgent:
         else:
             relevant_context = "No prior context available."
 
-        # Construct the prompt with retrieved context
-        prompt = (
-            f"AI: Respond as Concordia University Computer Science admission expert 2-3 sentences max.\n"
-            f"{self.context}\n"
-            f"Retrieved Context:\n{relevant_context}\n"
-            f"History:\n{history}\n"
-            f"Wikipedia Info: {wiki_content}\n"
-            f"User: {user_input}\n"
-           
+        # Construct the prompt with retrieved context using PromptTemplate
+        prompt_template = PromptTemplate(
+            input_variables=["context", "relevant_context", "history", "wiki_content", "user_input"],
+            template=(
+                "AI: Respond as Concordia University Computer Science admission expert 2-3 sentences max.\n"
+                "{context}\n"
+                "Retrieved Context:\n{relevant_context}\n"
+                "History:\n{history}\n"
+                "Wikipedia Info: {wiki_content}\n"
+                "User: {user_input}\n"
+            )
+        )
+
+        prompt = prompt_template.format(
+            context=self.context,
+            relevant_context=relevant_context,
+            history=history,
+            wiki_content=wiki_content,
+            user_input=user_input
         )
 
         # Generate response

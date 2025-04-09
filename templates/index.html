@@ -10,14 +10,23 @@
 <body>
     <div class="chat-container">
         <div class="header">
-            <h1>Multi-Agent Chatbot</h1>
-            <p>Ask about general topics, Concordia CS admissions, or AI!</p>
+            
+            <h1>COMP474 Project-2 Multi-Agent Chatbot Using Ollama</h1>
+           
+            <p>Ask about AI/ML questions, Concordia Computer Science admissions, or just general Info</p>
         </div>
-        <div id="chat-history" class="chat-history"></div>
+        <div id="chat-history" class="chat-history">
+            <div class="message ai-message">AI: Welcome! How can I assist you today?</div>
+        </div>
         <div class="input-container">
-            <input type="text" id="message-input" placeholder="Type your question...">
-            <button onclick="sendMessage()">Send</button>
+            <input type="text" id="message-input" placeholder="Type your question..." aria-label="Message input" onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" aria-label="Send message">Send</button>
         </div>
+        <footer>
+            <p style="text-align: center; margin-top: 20px; color: #555;">
+                Done by Yasser Ameer and Peter Abou Kassam
+            </p>
+        </footer>
     </div>
     <script src="/static/script.js"></script>
 </body>

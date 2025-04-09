@@ -21,7 +21,7 @@ function sendMessage() {
         // Display AI response
         const aiDiv = document.createElement('div');
         aiDiv.className = 'message ai-message';
-        aiDiv.textContent = 'AI: ' + data.response;
+        aiDiv.textContent = data.response;
         chatHistory.appendChild(aiDiv);
         chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
     })

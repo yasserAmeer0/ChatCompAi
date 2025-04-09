@@ -4,6 +4,7 @@ from langchain_community.retrievers import WikipediaRetriever
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
+from langchain.prompts import PromptTemplate  # Add this import if not already present
 
 class AIAgent:
     def __init__(self):
@@ -46,15 +47,25 @@ class AIAgent:
         else:
             relevant_context = "No prior context available."
 
-        # Construct the prompt with retrieved context
-        prompt = (
-            f"AI: Respond as AI expert with 2-3 sentences max.\n"
-            f"{self.context}\n"
-            f"Retrieved Context:\n{relevant_context}\n"
-            f"History:\n{history}\n"
-            f"Wikipedia Info: {wiki_content}\n"
-            f"User: {user_input}\n"
-            
+        # Construct the prompt with retrieved context using PromptTemplate
+        prompt_template = PromptTemplate(
+            input_variables=["context", "relevant_context", "history", "wiki_content", "user_input"],
+            template=(
+                "AI: Respond as AI expert with 2-3 sentences max.\n"
+                "{context}\n"
+                "Retrieved Context:\n{relevant_context}\n"
+                "History:\n{history}\n"
+                "Wikipedia Info: {wiki_content}\n"
+                "User: {user_input}\n"
+            )
+        )
+
+        prompt = prompt_template.format(
+            context=self.context,
+            relevant_context=relevant_context,
+            history=history,
+            wiki_content=wiki_content,
+            user_input=user_input
         )
 
         # Generate response
