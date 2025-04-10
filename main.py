@@ -15,20 +15,18 @@ class ChatbotSystem:
         self.ai_agent = AIAgent()
         self.last_agent = None
 
-        # Load spaCy model
+        # Load spaCy model for topic extraction
         self.nlp = spacy.load("en_core_web_sm")
 
     def detect_topic(self, text):
         doc = self.nlp(text.lower())
 
-        #  keywords matching 
+        # Heuristic: use entity labels or keywords
         keywords = set(token.lemma_ for token in doc)
-         # keywords that match the admission and ai topics to choose the propre agent   
-        admission_keywords = {"concordia", "university", "admission", "program", "elective", "course", "application"}
 
+        admission_keywords = {"concordia", "university", "admission", "program", "elective", "course", "application"}
         ai_keywords = {"ai", "artificial", "intelligence", "machine", "learning", "deep", "model"}
 
-        #else if the keywords do not match any of the two topics we can use the general agent
         if keywords & admission_keywords:
             return "admission"
         elif keywords & ai_keywords:

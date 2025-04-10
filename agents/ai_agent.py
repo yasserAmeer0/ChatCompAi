@@ -4,27 +4,17 @@ from langchain_community.retrievers import WikipediaRetriever
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from langchain.prompts import PromptTemplate  
+from langchain.prompts import PromptTemplate  # Add this import if not already present
 
 class AIAgent:
     def __init__(self):
         self.model = "gemma3:4B"
-        
-        # Initialize conversation memory
-        # This will store the conversation history for context retrieval
         self.memory = ConversationBufferMemory()
-        
-        # Initialize Wikipedia retriever with top_k_results set to 1
-        # This will fetch the most relevant Wikipedia page for the query
         self.wiki_retriever = WikipediaRetriever(top_k_results=1)
         self.context = "You are an AI expert. Respond as AI only, 2-3 sentences max."
-        
         # Initialize sentence transformer for embeddings
-        # This will be used for generating embeddings of the context
         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
-        
         # Initialize FAISS index
-        # This will be used for efficient similarity search of embeddings
         self.dimension = 384
         self.index = faiss.IndexFlatL2(self.dimension)
         self.history_texts = []  # Store text for retrieval
@@ -36,9 +26,9 @@ class AIAgent:
         # Fetch Wikipedia content
         try:
             wiki_docs = self.wiki_retriever.invoke(user_input)
-            wiki_content = wiki_docs[0].page_content[:350] if wiki_docs else "No Wikipedia info found."
+            wiki_content = wiki_docs[0].page_content[:300] if wiki_docs else "No Wikipedia info found."
         except Exception:
-            wiki_content = "Fetching Wikipedia data failed"
+            wiki_content = "Couldn’t fetch Wikipedia data."
 
         # Combine history, wiki content, and user input for context
         combined_context = f"History:\n{history}\nWikipedia Info: {wiki_content}\nUser: {user_input}"
@@ -52,15 +42,16 @@ class AIAgent:
 
         # Search FAISS index for relevant past context
         if self.index.ntotal > 1:
-            indices = self.index.search(np.array([context_embedding]), k=1)
+            distances, indices = self.index.search(np.array([context_embedding]), k=1)
             relevant_context = self.history_texts[indices[0][0]]
         else:
-            relevant_context = "No prior context"
+            relevant_context = "No prior context available."
 
-        # Construct the prompt with retrieved context using PromptTemplate using Langchain prompt template
+        # Construct the prompt with retrieved context using PromptTemplate
         prompt_template = PromptTemplate(
             input_variables=["context", "relevant_context", "history", "wiki_content", "user_input"],
             template=(
+                "AI: Respond as AI expert with 2-3 sentences max.\n"
                 "{context}\n"
                 "Retrieved Context:\n{relevant_context}\n"
                 "History:\n{history}\n"
@@ -77,13 +68,12 @@ class AIAgent:
             user_input=user_input
         )
 
-        # Generate response using Ollama last resort if none of the two above work
-        # Fallback to Ollama for response generation
+        # Generate response
         try:
             response = ollama.chat(model=self.model, messages=[{"role": "user", "content": prompt}])
             ai_response = response['message']['content']
         except Exception:
-             ai_response = "Sorry, I Can't generate an answer"
+            ai_response = "Sorry, I couldn’t generate a response right now."
 
         # Save to memory
         self.memory.save_context({"input": user_input}, {"output": ai_response})
