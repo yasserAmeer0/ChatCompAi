@@ -3,9 +3,7 @@ from agents.general_agent import GeneralAgent
 from agents.admission_cs import AdmissionAgent
 from agents.ai_agent import AIAgent
 
-# Suppress LangChain deprecation warning for cleaner output (optional)
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 def test_agent(agent, name, queries):
     print(f"\n=== Testing {name} ===")

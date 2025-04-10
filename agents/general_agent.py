@@ -4,7 +4,7 @@ from langchain_community.retrievers import WikipediaRetriever
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from langchain.prompts import PromptTemplate  # Add this import if not already present
+from langchain.prompts import PromptTemplate  
 
 class GeneralAgent:
     def __init__(self):
@@ -17,7 +17,7 @@ class GeneralAgent:
         self.dimension = 384
         self.index = faiss.IndexFlatL2(self.dimension)  # L2 distance for similarity search
         self.history_texts = []  # Store text for retrieval
-
+        self.context = "You are a general AI agent that answers normal questions in 2-3 sentences max."
     def respond(self, user_input):
         # Load conversation history from buffer memory
         history = self.memory.load_memory_variables({}).get("history", "")
@@ -25,9 +25,9 @@ class GeneralAgent:
         # Fetch Wikipedia content
         try:
             wiki_docs = self.wiki_retriever.invoke(user_input)
-            wiki_content = wiki_docs[0].page_content[:300] if wiki_docs else "No Wikipedia info found."
+            wiki_content = wiki_docs[0].page_content[:350] if wiki_docs else "No Wikipedia info found."
         except Exception:
-            wiki_content = "Couldn’t fetch Wikipedia data."
+            wiki_content = "Fetching Wikipedia data failed."
 
         # Combine history, wiki content, and user input for context
         combined_context = f"History:\n{history}\nWikipedia Info: {wiki_content}\nUser: {user_input}"
@@ -40,8 +40,8 @@ class GeneralAgent:
         self.history_texts.append(combined_context)  # Store the text for later retrieval
 
         # Search FAISS index for the most relevant past context (if any)
-        if self.index.ntotal > 1:  # Only search if there’s enough data
-            distances, indices = self.index.search(np.array([context_embedding]), k=1)
+        if self.index.ntotal > 1:  
+            indices = self.index.search(np.array([context_embedding]), k=1)
             relevant_context = self.history_texts[indices[0][0]]
         else:
             relevant_context = "No prior context available."
@@ -50,7 +50,7 @@ class GeneralAgent:
         prompt_template = PromptTemplate(
             input_variables=["relevant_context", "history", "wiki_content", "user_input"],
             template=(
-                "AI: Respond to the best of your knowledge to this question with 2-3 sentences max.\n"
+                "{context}\n"
                 "Retrieved Context:\n{relevant_context}\n"
                 "History:\n{history}\n"
                 "Wikipedia Info: {wiki_content}\n"
@@ -59,18 +59,20 @@ class GeneralAgent:
         )
 
         prompt = prompt_template.format(
+            context=self.context,
             relevant_context=relevant_context,
             history=history,
             wiki_content=wiki_content,
             user_input=user_input
         )
 
-        # Generate response using Ollama
+        # Generate response using Ollama last resort if none of the two above work
+        # Fallback to Ollama for response generation
         try:
             response = ollama.chat(model=self.model, messages=[{"role": "user", "content": prompt}])
             ai_response = response['message']['content']
         except Exception:
-            ai_response = "Sorry, I couldn’t generate a response right now."
+             ai_response = "Sorry, I Can't generate an answer."
 
         # Save the conversation to buffer memory
         self.memory.save_context({"input": user_input}, {"output": ai_response})
